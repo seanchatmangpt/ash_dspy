@@ -112,10 +112,10 @@ defmodule AshDspy.Program do
           []
 
         metric ->
+          dimension = metric.dimension
+
           entities
-          |> Enum.filter(
-            &match?(%Resource.Requirement{dimension: dimension} when dimension == metric.dimension, &1)
-          )
+          |> Enum.filter(&match?(%Resource.Requirement{dimension: ^dimension}, &1))
           |> Enum.map(&check_requirement(&1, score))
       end
 
@@ -158,9 +158,10 @@ defmodule AshDspy.Program do
   end
 
   defp find_signature(entities, name) do
-    normalized = normalize_atom(name)
-
-    case Enum.find(entities, &match?(%Resource.Signature{name: ^normalized}, &1)) do
+    case Enum.find(entities, fn
+           %Resource.Signature{name: declared} -> same_name?(declared, name)
+           _ -> false
+         end) do
       nil -> {:error, :signature_not_found}
       signature -> {:ok, signature}
     end
@@ -225,8 +226,10 @@ defmodule AshDspy.Program do
   defp require_fields(_fields, _error), do: :ok
 
   defp find_metric(entities, metric_name) do
-    name = normalize_atom(metric_name)
-    Enum.find(entities, &match?(%Resource.Metric{name: ^name}, &1))
+    Enum.find(entities, fn
+      %Resource.Metric{name: declared} -> same_name?(declared, metric_name)
+      _ -> false
+    end)
   end
 
   defp check_requirement(requirement, score) do
@@ -283,8 +286,13 @@ defmodule AshDspy.Program do
   defp normalize_metric_name(value) when is_binary(value), do: value
   defp normalize_metric_name(value), do: inspect(value)
 
-  defp normalize_atom(value) when is_atom(value), do: value
-  defp normalize_atom(value) when is_binary(value), do: String.to_existing_atom(value)
+  defp same_name?(declared, requested) when is_atom(declared) and is_atom(requested),
+    do: declared == requested
+
+  defp same_name?(declared, requested) when is_atom(declared) and is_binary(requested),
+    do: Atom.to_string(declared) == requested
+
+  defp same_name?(_declared, _requested), do: false
 
   defp json_ready(nil), do: nil
   defp json_ready(true), do: true
