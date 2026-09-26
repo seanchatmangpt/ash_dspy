@@ -57,3 +57,56 @@ HANDWRITTEN.md).
 
 `mix igniter.install ash_dspy` (or `mix ash_dspy.install --target MyApp.SomeResource`)
 adds the formatter plugin and the `extensions: [AshDspy.Resource]` wiring.
+
+## WebAssembly runtime
+
+`ash_dspy` executes DSPy through the `dspy-wasm` WASI-P2 component; it does
+not embed CPython in the BEAM. The admitted producer is pinned in
+`priv/dspy-wasm.lock.json`, and its WIT + machine-readable consumer contract
+are vendored under `priv/`.
+
+Start a component by supplying the built `dspy.wasm` and an LM callback.
+The callback receives DSPy's decoded LM request; returning a string supplies
+completion text, while returning a map supplies the full LM response envelope.
+
+```elixir
+{:ok, dspy} =
+  AshDspy.Wasm.start_link(
+    path: System.fetch_env!("DSPY_WASM_PATH"),
+    lm: fn request ->
+      MyApp.LM.complete(request)
+    end,
+    tools: %{
+      search: fn %{"query" => query} -> MyApp.Search.run(query) end
+    }
+  )
+
+{:ok, report} =
+  AshDspy.run(
+    dspy,
+    MyApp.Answer,
+    :answer_question,
+    %{question: "Capital of France?", passage: "Paris is the capital of France."},
+    module: :chain_of_thought
+  )
+```
+
+The same resource can be sent to `AshDspy.render/5`, `AshDspy.evaluate/5`,
+and `AshDspy.compile/5`. A `compile` result's `"program_state"` can be
+passed back as `program_state:` to later `run` calls; dspy-wasm enforces
+subject binding on that state.
+
+Provider/network authority and host-tool authority remain outside the
+component. They cross only `chatman:dspy/lm@0.1.0` and
+`chatman:dspy/tools@0.1.0`.
+
+### Real component court
+
+The normal suite verifies projection and ABI wiring without rebuilding the
+large WASI dependency closure. To execute the full Ash -> Wasmex -> dspy-wasm
+path against a built component:
+
+```bash
+DSPY_WASM_PATH=/path/to/dspy-wasm/dist/dspy.wasm mix test --include wasm
+```
+
