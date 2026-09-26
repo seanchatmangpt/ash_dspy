@@ -1,0 +1,14 @@
+# Frontmatter schema (ggen_engine::config::GgenConfig -- the schema `ggen sync run`
+# consumes). FM-CONFIG-101: `[project].version` is a declarative-rules marker and
+# must NOT appear here; [packs] is a table-of-tables (never [[packs]] array).
+[project]
+name = "ash_dspy"
+
+[ontology]
+source = "ontology.ttl"
+
+[templates]
+dir = "templates"
+
+[packs]
+ash-extension = { git = "https://github.com/seanchatmangpt/ggen-marketplace.git", version = "81e2919c4caa972a3237cd79b9c23d8c3fc5892e", subdir = "packs/ash-extension-pack" }

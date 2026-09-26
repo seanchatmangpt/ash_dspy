@@ -1,0 +1,307 @@
+# ash_dspy ontology -- one aex:AshExtensionSpec consumed through the
+# ash-extension-pack (ggen-marketplace packs/ash-extension-pack, pinned
+# 81e2919c4caa972a3237cd79b9c23d8c3fc5892e in ggen.toml). This file is the
+# canonical source for lib/ash_dspy/{resource,persist,verify,info}.ex, the
+# Igniter installer, and the composition test. Edit here, re-run `ggen sync run`;
+# NEVER hand-edit the generated projections (Overwrite mode erases hand-edits).
+@prefix aex:  <http://seanchatmangpt.github.io/packs/ash-extension-core#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+
+#################################################################
+# The spec
+#################################################################
+
+aex:ashdspy-spec a aex:AshExtensionSpec ;
+    aex:packageName "ash_dspy" ;
+    aex:moduleName "AshDspy.Resource" ;
+    aex:extensionTarget "resource" ;
+    aex:taskModuleName "AshDspy" ;
+    aex:formatterModule "AshDspy.Formatter" ;
+    aex:workflowReactor false ;
+    aex:workflowReversible false ;
+    rdfs:comment "DSPy-style semantic signatures on Ash resources. One :dspy section; six top-level entities (signature/input/output/metric/requirement/minimize). Top-level, not nested under signature: the pack's aex:NestedEntity path is structurally unusable for entities WITH schema fields -- gate 020 requires every EntitySchemaField.fieldOf to target a row typed aex:DslEntity, gate 010 requires every DslEntity to carry entityOf, and a row that is both DslEntity and NestedEntity is rendered TWICE by templates/extension.ex.tmpl (top-level entities query lines 31-44 + nested_entities loop lines 68-74), duplicating defmodule. Recorded failed edge; fixing it belongs in the pack (admit fieldOf->NestedEntity in gate 020), not in this consumer spec." .
+
+#################################################################
+# Section :dspy
+#################################################################
+
+aex:ashdspy-dspy-section a aex:DslSection ;
+    aex:sectionOf aex:ashdspy-spec ;
+    aex:sectionName "dspy" ;
+    aex:sectionOrder 1 ;
+    aex:sectionDescribe "Declares DSPy-style semantic signatures on an Ash resource." .
+
+aex:ashdspy-default-metric a aex:SectionSchemaField ;
+    aex:sectionFieldOf aex:ashdspy-dspy-section ;
+    aex:sectionFieldOrder 1 ; aex:sectionFieldName "default_metric" ; aex:sectionFieldType "atom" .
+
+aex:ashdspy-default-minimize a aex:SectionSchemaField ;
+    aex:sectionFieldOf aex:ashdspy-dspy-section ;
+    aex:sectionFieldOrder 2 ; aex:sectionFieldName "default_minimize" ; aex:sectionFieldType "atom" .
+
+#################################################################
+# Entity :signature -- args [:name], identifier :name
+#################################################################
+
+aex:ashdspy-signature a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 1 ; aex:entityName "signature" ;
+    aex:entityStruct "Signature" ;
+    aex:entityIdentifier "name" .
+
+aex:ashdspy-signature-arg-name a aex:EntityArg ;
+    aex:argOf aex:ashdspy-signature ; aex:argOrder 1 ; aex:argName "name" .
+
+aex:ashdspy-signature-name a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-signature ;
+    aex:fieldOrder 1 ; aex:fieldName "name" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The signature's atom name, e.g. :answer_question." .
+
+aex:ashdspy-signature-description a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-signature ;
+    aex:fieldOrder 2 ; aex:fieldName "description" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable statement of what transforms this signature's inputs into its outputs." .
+
+#################################################################
+# Entity :input -- args [:name], identifier :name
+#################################################################
+
+aex:ashdspy-input a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 2 ; aex:entityName "input" ;
+    aex:entityStruct "Input" ;
+    aex:entityIdentifier "name" .
+
+aex:ashdspy-input-arg-name a aex:EntityArg ;
+    aex:argOf aex:ashdspy-input ; aex:argOrder 1 ; aex:argName "name" .
+
+aex:ashdspy-input-arg-type a aex:EntityArg ;
+    aex:argOf aex:ashdspy-input ; aex:argOrder 2 ; aex:argName "type" .
+
+aex:ashdspy-input-name a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-input ;
+    aex:fieldOrder 1 ; aex:fieldName "name" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The input field's atom name, e.g. :question." .
+
+aex:ashdspy-input-type a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-input ;
+    aex:fieldOrder 2 ; aex:fieldName "type" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The Ash type atom for this input, e.g. :string." .
+
+aex:ashdspy-input-doc a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-input ;
+    aex:fieldOrder 3 ; aex:fieldName "doc" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable description of this input; becomes part of the rendered signature prompt." .
+
+aex:ashdspy-input-required a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-input ;
+    aex:fieldOrder 4 ; aex:fieldName "required" ; aex:fieldType "boolean" ;
+    aex:fieldRequired false ; aex:fieldDefault "true" ;
+    aex:fieldDoc "Whether this input must be provided to every program compiled from the owning signature." .
+
+#################################################################
+# Entity :output -- args [:name], identifier :name
+#################################################################
+
+aex:ashdspy-output a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 3 ; aex:entityName "output" ;
+    aex:entityStruct "Output" ;
+    aex:entityIdentifier "name" .
+
+aex:ashdspy-output-arg-name a aex:EntityArg ;
+    aex:argOf aex:ashdspy-output ; aex:argOrder 1 ; aex:argName "name" .
+
+aex:ashdspy-output-arg-type a aex:EntityArg ;
+    aex:argOf aex:ashdspy-output ; aex:argOrder 2 ; aex:argName "type" .
+
+aex:ashdspy-output-name a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-output ;
+    aex:fieldOrder 1 ; aex:fieldName "name" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The output field's atom name, e.g. :answer." .
+
+aex:ashdspy-output-type a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-output ;
+    aex:fieldOrder 2 ; aex:fieldName "type" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The Ash type atom for this output, e.g. :string." .
+
+aex:ashdspy-output-doc a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-output ;
+    aex:fieldOrder 3 ; aex:fieldName "doc" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable description of this output." .
+
+aex:ashdspy-output-required a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-output ;
+    aex:fieldOrder 4 ; aex:fieldName "required" ; aex:fieldType "boolean" ;
+    aex:fieldRequired false ; aex:fieldDefault "false" ;
+    aex:fieldDoc "Whether an output postcondition is enforced for this field." .
+
+#################################################################
+# Entity :metric -- args [:name], identifier :name
+#################################################################
+
+aex:ashdspy-metric a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 4 ; aex:entityName "metric" ;
+    aex:entityStruct "Metric" ;
+    aex:entityIdentifier "name" .
+
+aex:ashdspy-metric-arg-name a aex:EntityArg ;
+    aex:argOf aex:ashdspy-metric ; aex:argOrder 1 ; aex:argName "name" .
+
+aex:ashdspy-metric-arg-dimension a aex:EntityArg ;
+    aex:argOf aex:ashdspy-metric ; aex:argOrder 2 ; aex:argName "dimension" .
+
+aex:ashdspy-metric-name a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-metric ;
+    aex:fieldOrder 1 ; aex:fieldName "name" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The metric's atom name, e.g. :exact_match." .
+
+aex:ashdspy-metric-dimension a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-metric ;
+    aex:fieldOrder 2 ; aex:fieldName "dimension" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The evaluation dimension this metric measures, e.g. :accuracy." .
+
+aex:ashdspy-metric-doc a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-metric ;
+    aex:fieldOrder 3 ; aex:fieldName "doc" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable description of how the metric is computed." .
+
+#################################################################
+# Entity :requirement -- args [:dimension, :operator], no identifier
+# (several requirements may share a dimension with different operators).
+# `operator` is the spec's fieldType="one_of" exercise: closed comparison
+# vocabulary rendered as {:one_of, [:gte, :lte, :gt, :lt, :eq]}.
+#################################################################
+
+aex:ashdspy-requirement a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 5 ; aex:entityName "requirement" ;
+    aex:entityStruct "Requirement" .
+
+aex:ashdspy-requirement-arg-dimension a aex:EntityArg ;
+    aex:argOf aex:ashdspy-requirement ; aex:argOrder 1 ; aex:argName "dimension" .
+
+aex:ashdspy-requirement-arg-operator a aex:EntityArg ;
+    aex:argOf aex:ashdspy-requirement ; aex:argOrder 2 ; aex:argName "operator" .
+
+aex:ashdspy-requirement-dimension a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-requirement ;
+    aex:fieldOrder 1 ; aex:fieldName "dimension" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The metric dimension this requirement constrains, e.g. :accuracy." .
+
+aex:ashdspy-requirement-operator a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-requirement ;
+    aex:fieldOrder 2 ; aex:fieldName "operator" ; aex:fieldType "one_of" ;
+    aex:fieldRequired true ;
+    aex:fieldDoc "Comparison operator applied to the dimension's measured value." .
+
+aex:ashdspy-requirement-operator-gte a aex:FieldOneOfValue ;
+    aex:oneOfValueOf aex:ashdspy-requirement-operator ; aex:oneOfValueOrder 1 ; aex:oneOfValueName "gte" .
+aex:ashdspy-requirement-operator-lte a aex:FieldOneOfValue ;
+    aex:oneOfValueOf aex:ashdspy-requirement-operator ; aex:oneOfValueOrder 2 ; aex:oneOfValueName "lte" .
+aex:ashdspy-requirement-operator-gt a aex:FieldOneOfValue ;
+    aex:oneOfValueOf aex:ashdspy-requirement-operator ; aex:oneOfValueOrder 3 ; aex:oneOfValueName "gt" .
+aex:ashdspy-requirement-operator-lt a aex:FieldOneOfValue ;
+    aex:oneOfValueOf aex:ashdspy-requirement-operator ; aex:oneOfValueOrder 4 ; aex:oneOfValueName "lt" .
+aex:ashdspy-requirement-operator-eq a aex:FieldOneOfValue ;
+    aex:oneOfValueOf aex:ashdspy-requirement-operator ; aex:oneOfValueOrder 5 ; aex:oneOfValueName "eq" .
+
+aex:ashdspy-requirement-bound a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-requirement ;
+    aex:fieldOrder 3 ; aex:fieldName "bound" ; aex:fieldType "integer" ;
+    aex:fieldRequired true ;
+    aex:fieldDoc "Threshold the measured value must satisfy under `operator`, in the dimension's own unit (the pack's closed field-type set has integer but no float, so bounds are expressed in whole units, e.g. percent 0-100)." .
+
+aex:ashdspy-requirement-doc a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-requirement ;
+    aex:fieldOrder 4 ; aex:fieldName "doc" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable statement of what this requirement demands." .
+
+#################################################################
+# Entity :minimize -- args [:objective], identifier :objective
+#################################################################
+
+aex:ashdspy-minimize a aex:DslEntity ;
+    aex:entityOf aex:ashdspy-dspy-section ;
+    aex:entityOrder 6 ; aex:entityName "minimize" ;
+    aex:entityStruct "Minimize" ;
+    aex:entityIdentifier "objective" .
+
+aex:ashdspy-minimize-arg-objective a aex:EntityArg ;
+    aex:argOf aex:ashdspy-minimize ; aex:argOrder 1 ; aex:argName "objective" .
+
+aex:ashdspy-minimize-objective a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-minimize ;
+    aex:fieldOrder 1 ; aex:fieldName "objective" ; aex:fieldType "atom" ;
+    aex:fieldRequired true ; aex:fieldDoc "The objective to minimize, e.g. :token_cost." .
+
+aex:ashdspy-minimize-doc a aex:EntitySchemaField ;
+    aex:fieldOf aex:ashdspy-minimize ;
+    aex:fieldOrder 2 ; aex:fieldName "doc" ; aex:fieldType "string" ;
+    aex:fieldRequired false ; aex:fieldDoc "Human-readable statement of what minimizing this objective means." .
+
+#################################################################
+# Verifier (renders the real delegate/chain path in verify.ex with an
+# honest TODO check stub)
+#################################################################
+
+aex:ashdspy-verify-signatures a aex:Verifier ;
+    aex:verifierOf aex:ashdspy-spec ;
+    aex:verifierName "verify_signatures" ;
+    aex:verifierDoc "Every :dspy signature must declare at least one :input and at least one :output, and every :requirement dimension must be declared by some :metric." .
+
+#################################################################
+# Info-module getters (gate-050 quadruples: name/_result/!/?) reading the
+# compiled :dspy state
+#################################################################
+
+aex:ashdspy-getter-signature-programs a aex:InfoGetter ;
+    aex:getterOf aex:ashdspy-spec ;
+    aex:getterName "signature_programs" ;
+    aex:getterSourceSection aex:ashdspy-dspy-section .
+
+aex:ashdspy-getter-compiled-routes a aex:InfoGetter ;
+    aex:getterOf aex:ashdspy-spec ;
+    aex:getterName "compiled_routes" ;
+    aex:getterSourceSection aex:ashdspy-dspy-section .
+
+aex:ashdspy-getter-implementations a aex:InfoGetter ;
+    aex:getterOf aex:ashdspy-spec ;
+    aex:getterName "implementations" ;
+    aex:getterSourceSection aex:ashdspy-dspy-section .
+
+#################################################################
+# Deliberately ABSENT from this spec (each absence is a decision, not an
+# omission):
+# - aex:workflowReactor / aex:ReactorStep -- no pipeline (failed edges already
+#   disclosed by the pack: never-rendered template + steps query leaking
+#   across specs).
+# - aex:generatesReceiptedAction -- the wrapper references a Receipt module
+#   nothing generates (pack failed edge).
+# - aex:installerRuntimeDep -- the ontology comment and install.ex.tmpl:43
+#   disagree on format ("<dep> <req>" vs "<dep>|<req>"); the pack's own
+#   NotificationExtensionSpec fixture uses the format that renders invalid
+#   Elixir (split(pat="|") never splits it). ash_dspy injects no runtime dep.
+# - aex:CompositionTarget / aex:dualLevelFixture -- no ash_graphql/ash_json_api
+#   test-only deps in this package.
+#
+# Worked example (see README.md for the rendered form):
+#
+#   dspy do
+#     default_metric :accuracy
+#     default_minimize :token_cost
+#
+#     signature :answer_question do
+#       description "Answer the question using the grounding passage."
+#     end
+#
+#     input :question, :string, doc: "The question to answer."
+#     input :passage, :string
+#     output :answer, :string
+#     metric :exact_match, :accuracy
+#     requirement :accuracy, :gte, bound: 90
+#     minimize :token_cost
+#   end
+#################################################################
