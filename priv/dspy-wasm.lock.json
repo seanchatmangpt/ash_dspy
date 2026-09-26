@@ -1,0 +1,9 @@
+{
+  "repository": "seanchatmangpt/dspy-wasm",
+  "commit": "7a4102fc52203d1cad8e4c6c3dd4416abcac9e22",
+  "component_version": "0.1.0",
+  "target": "wasm32-wasip2",
+  "contract": "consumer/contract.json",
+  "wit": "wit/dspy.wit",
+  "artifact": "dist/dspy.wasm"
+}
