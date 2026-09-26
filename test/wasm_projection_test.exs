@@ -36,6 +36,7 @@ defmodule AshDspy.WasmProjectionTest do
     assert {:ok, program} = Program.spec(@resource, :answer_question)
 
     assert program["module"] == "predict"
+
     assert program["signature"]["instructions"] ==
              "Answer the question using the grounding passage."
 
@@ -88,6 +89,7 @@ defmodule AshDspy.WasmProjectionTest do
     assert request["metric"] == "exact_match"
     assert request["optimizer"] == "bootstrap-few-shot"
     assert request["config"] == %{"max_bootstrapped_demos" => 1}
+
     assert request["trainset"] == [
              %{
                "question" => "Capital of France?",
@@ -102,6 +104,7 @@ defmodule AshDspy.WasmProjectionTest do
     refused = Program.assess(@resource, "exact_match", %{"score" => 80.0})
 
     assert admitted["ash_dspy"]["requirements_met"] == true
+
     assert admitted["ash_dspy"]["requirements"] == [
              %{
                "dimension" => "accuracy",
