@@ -23,7 +23,7 @@ defmodule AshDspy.Wasm do
           | {:error, term()}
 
   @type lm_callback :: (map() -> lm_result())
-  @type tool_callback :: (map() -> term()) | (() -> term())
+  @type tool_callback :: (map() -> term()) | (-> term())
 
   @doc "The exact dspy-wasm component version this host admits."
   def component_version_requirement, do: @component_version
