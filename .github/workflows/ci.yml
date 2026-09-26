@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  elixir:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      # Pins mirror .tool-versions (erlang 28.3 / elixir 1.20.3-otp-28).
+      - name: Assert exact subject
+        shell: bash
+        run: |
+          expected="${{ github.event.pull_request.head.sha || github.sha }}"
+          actual="$(git rev-parse HEAD)"
+          test "$actual" = "$expected"
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "28.3"
+          elixir-version: "1.20.3"
+      # Key hashes mix.lock too: lockfile-only changes must bust the cache.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            deps
+            _build
+          key: elixir-${{ runner.os }}-${{ hashFiles('mix.exs', 'mix.lock') }}
+      - run: mix local.hex --force
+      - run: mix local.rebar --force
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - run: mix test
+
+  # Optional ggen sync determinism probe. Guarded: skipped entirely when the
+  # runner has no ggen binary or no network; `continue-on-error` keeps CI green
+  # while the known pack defect is outstanding
+  # (UNSUPPORTED(ggen:rust-e2e-ash-extension-pack): plain `ggen sync run` unions
+  # the pack's fixture ontology into the consumer data graph and leaks foreign
+  # files -- see HANDWRITTEN.md). When the guards pass, this job renders from
+  # the committed ontology.ttl and asserts that the sync touched ONLY the
+  # generated projection set: any foreign file is the fixture-leak defect
+  # firing, reported as evidence for the pack fix.
+  ggen-sync-determinism:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Guard — ggen present and network reachable
+        shell: bash
+        run: |
+          if ! command -v ggen >/dev/null 2>&1; then
+            echo "SKIP: ggen binary not installed on runner"; exit 0
+          fi
+          if ! curl -sSf --max-time 10 https://hex.pm >/dev/null 2>&1; then
+            echo "SKIP: no network egress"; exit 0
+          fi
+          echo "GUARDS_OK"
+      - name: Render from the committed ontology
+        id: sync
+        shell: bash
+        run: |
+          if ! command -v ggen >/dev/null 2>&1 || ! curl -sSf --max-time 10 https://hex.pm >/dev/null 2>&1; then
+            echo "SKIP: guards not satisfied"; exit 0
+          fi
+          ggen sync run
+      - name: Sync touched only the generated projection set (fixture-leak tripwire)
+        if: steps.sync.outputs.skip != 'true'
+        shell: bash
+        run: |
+          allowed='^(lib/ash_dspy/(resource|persist|verify|info)\.ex|lib/mix/tasks/ash_dspy\.install\.ex|ggen\.lock)$'
+          leaked="$(git status --porcelain | awk '{print $2}' | grep -Ev "$allowed" || true)"
+          if [ -n "$leaked" ]; then
+            echo "UNSUPPORTED(ggen:rust-e2e-ash-extension-pack): sync leaked foreign files:"
+            echo "$leaked"
+            exit 1
+          fi
+          echo "SYNC_DETERMINISTIC_OK"
