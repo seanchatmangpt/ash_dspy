@@ -8,19 +8,19 @@ defmodule AshDspy.WasmProjectionFixture do
   end
 
   dspy do
-    default_metric :accuracy
-    default_minimize :token_cost
+    default_metric(:accuracy)
+    default_minimize(:token_cost)
 
     signature :answer_question do
       description "Answer the question using the grounding passage."
     end
 
-    input :question, :string, doc: "Question to answer."
-    input :passage, :string, doc: "Grounding passage."
-    output :answer, :string, doc: "Grounded answer."
-    metric :exact_match, :accuracy
-    requirement :accuracy, :gte, bound: 90
-    minimize :token_cost
+    input(:question, :string, doc: "Question to answer.")
+    input(:passage, :string, doc: "Grounding passage.")
+    output(:answer, :string, doc: "Grounded answer.")
+    metric(:exact_match, :accuracy)
+    requirement(:accuracy, :gte, bound: 90)
+    minimize(:token_cost)
   end
 end
 
