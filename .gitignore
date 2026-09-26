@@ -1,0 +1,11 @@
+/_build/
+/_build-*/
+/deps/
+# ggen sync working state + per-run receipts are local, never repo artifacts
+/.ggen/
+/.ggen-v2/
+.elixir_ls
+.DS_Store
+erl_crash.dump
+*.dump
+/cover/
