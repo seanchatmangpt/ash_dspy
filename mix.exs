@@ -8,7 +8,7 @@ defmodule AshDspy.MixProject do
     [
       app: :ash_dspy,
       version: @version,
-      elixir: "~> 1.15",
+      elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
@@ -27,6 +27,12 @@ defmodule AshDspy.MixProject do
       {:spark, "~> 2.2"},
       {:igniter, "~> 0.5", optional: true},
       {:jason, "~> 1.4", optional: true},
+      # Hand-written runtime layer (lib/ash_dspy/runtime.ex). Repoint at a tag or
+      # main once dspy-wasm PR #8 merges.
+      {:dspy_wasm,
+       git: "https://github.com/seanchatmangpt/dspy-wasm.git",
+       branch: "claude/dspy-wasm-prod-readiness-0qb34s",
+       sparse: "consumer/elixir"},
       {:ex_doc, "~> 0.34", only: :dev, runtime: false}
     ]
   end
