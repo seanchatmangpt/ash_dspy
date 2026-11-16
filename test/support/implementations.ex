@@ -103,11 +103,12 @@ defmodule AshDspy.TestSupport.FlakyRule do
         _ -> ""
       end
 
-    team = if :erlang.unique_integer([:positive, :monotonic]) |> rem(2) == 0 do
-      "general"
-    else
-      "billing"
-    end
+    team =
+      if :erlang.unique_integer([:positive, :monotonic]) |> rem(2) == 0 do
+        "general"
+      else
+        "billing"
+      end
 
     {:ok, AshDspy.TestSupport.Corpus.triage(ticket) |> Map.put(:team, team)}
   end

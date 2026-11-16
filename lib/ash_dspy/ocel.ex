@@ -50,7 +50,8 @@ defmodule AshDspy.Ocel do
   Returns `{:ok, :disabled}` when no `:ocel_path` is configured,
   `{:ok, path}` on a witnessed append, `{:error, term}` otherwise.
   """
-  @spec emit_event(event_type(), list(), map()) :: {:ok, :disabled | String.t()} | {:error, term()}
+  @spec emit_event(event_type(), list(), map()) ::
+          {:ok, :disabled | String.t()} | {:error, term()}
   def emit_event(event_type, object_refs, attributes \\ %{})
 
   def emit_event(event_type, object_refs, attributes)

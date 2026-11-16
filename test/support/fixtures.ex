@@ -19,21 +19,21 @@ defmodule AshDspy.TestSupport.TriageResource do
   end
 
   dspy do
-    default_metric :accuracy
-    default_minimize :token_cost
+    default_metric(:accuracy)
+    default_minimize(:token_cost)
 
     signature :triage_ticket do
       description "Triage one support ticket into urgency and owning team."
     end
 
-    input :ticket, :string, doc: "The raw ticket text."
+    input(:ticket, :string, doc: "The raw ticket text.")
 
-    output :urgency, :string, doc: "One of low/high."
-    output :team, :string, doc: "One of billing/technical/general."
+    output(:urgency, :string, doc: "One of low/high.")
+    output(:team, :string, doc: "One of billing/technical/general.")
 
-    metric :exact_match, :accuracy
-    requirement :accuracy, :gte, bound: 90
-    minimize :token_cost
+    metric(:exact_match, :accuracy)
+    requirement(:accuracy, :gte, bound: 90)
+    minimize(:token_cost)
   end
 end
 

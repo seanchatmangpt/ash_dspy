@@ -111,11 +111,17 @@ defmodule AshDspy.Receipt do
         Map.new(Keyword.get(opts, :metadata, %{}))
       )
 
-    new(provider, :capability_compile, Map.get(route, :signature_id), %{
-      evidence_digest: evidence_digest,
-      verdict_digest: verdict_digest,
-      scores: scores
-    }, metadata: metadata)
+    new(
+      provider,
+      :capability_compile,
+      Map.get(route, :signature_id),
+      %{
+        evidence_digest: evidence_digest,
+        verdict_digest: verdict_digest,
+        scores: scores
+      },
+      metadata: metadata
+    )
   end
 
   # -- internals --------------------------------------------------------------

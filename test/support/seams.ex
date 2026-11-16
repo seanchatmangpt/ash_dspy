@@ -187,9 +187,13 @@ defmodule AshDspy.TestSupport.Seams do
   end
 
   defp dir_paths(dir, files),
-    do: Enum.map(files, fn f -> Path.join(dir, f) end) |> Enum.filter(&String.ends_with?(&1, ".jsonl"))
+    do:
+      Enum.map(files, fn f -> Path.join(dir, f) end)
+      |> Enum.filter(&String.ends_with?(&1, ".jsonl"))
 
   defp ticket_of(%{ticket: t}) when is_binary(t), do: t
   defp ticket_of(%{"ticket" => t}) when is_binary(t), do: t
-  defp ticket_of(other) when is_map(other), do: other |> inspect() |> Corpus.triage() |> then(fn _ -> "" end)
+
+  defp ticket_of(other) when is_map(other),
+    do: other |> inspect() |> Corpus.triage() |> then(fn _ -> "" end)
 end
